@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <TextView
+        android:id="@+id/main_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="홈 화면"
+        android:textAlignment="center"
+        android:textSize="20dp"
+        />
+    <Button
+        android:id="@+id/main_creatdb"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="DB생성하기"
+        />
+    <Button
+        android:id="@+id/main_start"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="시작하기"
+        />
+</LinearLayout>

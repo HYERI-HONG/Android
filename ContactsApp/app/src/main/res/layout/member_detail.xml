@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <TextView
+        android:id="@+id/detail_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="연락처 상세 정보"
+        android:textAlignment="center"
+        android:textSize="20dp"
+
+        />
+    <Button
+        android:id="@+id/detail_goMap"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="위치 보기"
+        />
+    <Button
+        android:id="@+id/detail_goChat"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="메세지 보내기"
+        />
+    <Button
+        android:id="@+id/detail_goUpdate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="정보 수정"
+        />
+    <Button
+        android:id="@+id/detail_goCall"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="전화 걸기"
+        />
+    <Button
+        android:id="@+id/detail_goList"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="목록으로 돌아가기"
+        />
+</LinearLayout>
