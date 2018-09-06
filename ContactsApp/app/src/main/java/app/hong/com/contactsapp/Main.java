@@ -20,12 +20,8 @@ public class Main extends AppCompatActivity {
         Context context = Main.this;
         findViewById(R.id.main_start).setOnClickListener(
                 (View v)->{
-                    this.startActivity(new Intent(context,MemberLogin.class));
-                }
-        );
-        findViewById(R.id.main_creatdb).setOnClickListener(
-                (View v)->{
                     SQLiteHelper helper = new SQLiteHelper(context);
+                    this.startActivity(new Intent(context,MemberLogin.class));
                 }
         );
     }
@@ -69,11 +65,14 @@ public class Main extends AppCompatActivity {
                     ,MEMTAB,MEMSEQ,MEMNAME,MEMPASS,MEMEMAIL,MEMPHONE,MEMADDR,MEMPHOTO);
             db.execSQL(sql);
 
-            for(int i=0;i<5;i++){
+            String[] names ={"고애신","유진초이","김희성","쿠도히나","구동매"};
+            String[] emails={"sadending@naver.com","sunshine@hanmail.net","kim@google.com","kudo@naver.com","dong@google.com"};
+
+           for(int i=0;i<5;i++){
                 db.execSQL(String.format("INSERT INTO %s (%s ,%s ,%s ,%s ,%s ,%s ) " +
                         "VALUES('%s' ,'%s' ,'%s' ,'%s' ,'%s' ,'%s')"
                         ,MEMTAB,MEMNAME,MEMPASS,MEMEMAIL,MEMPHONE,MEMADDR,MEMPHOTO,
-                        "홍길동"+i,"1","hong"+i+"@test.com","010-1234-567"+i,"김포한강"+i+"로","hong"+i+".jpg"));
+                        names[i],"1",emails[i],"010-1234-567"+i,"김포한강"+i+"로","profile_"+i));
             }
         }
         @Override

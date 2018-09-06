@@ -9,10 +9,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
-
 import static app.hong.com.contactsapp.Main.*;
-
-
 
 public class MemberLogin extends AppCompatActivity {
 
@@ -25,15 +22,15 @@ public class MemberLogin extends AppCompatActivity {
 
         findViewById(R.id.login_submit).setOnClickListener(
                 (View v)->{
-                    ItemExist exist = new ItemExist(context);
+                    ItemExist query = new ItemExist(context);
                     EditText x = findViewById(R.id.login_id);
                     EditText y = findViewById(R.id.login_pass);
-                    exist.id = x.getText().toString();
-                    exist.pw = y.getText().toString();
+                    query.id = x.getText().toString();
+                    query.pw = y.getText().toString();
                     new Main.StatusService(){
                         @Override
                         public void perform() {
-                            if(exist.execute()){
+                            if(query.execute()){
                                 Toast.makeText(context,"로그인 성공",Toast.LENGTH_LONG).show();
                                 startActivity(new Intent(context,MemberList.class));
                             }else{
