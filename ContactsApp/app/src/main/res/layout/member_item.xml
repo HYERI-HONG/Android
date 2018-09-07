@@ -25,5 +25,6 @@
         android:paddingRight="10dp"
         android:textSize="15dp"
         android:textStyle="normal"
+        android:layout_toRightOf="@id/item_name"
         />
 </RelativeLayout>

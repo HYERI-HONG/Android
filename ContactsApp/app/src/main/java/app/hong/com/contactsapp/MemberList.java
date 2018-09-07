@@ -1,20 +1,36 @@
 package app.hong.com.contactsapp;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static app.hong.com.contactsapp.Main.MEMADDR;
+import static app.hong.com.contactsapp.Main.MEMEMAIL;
+import static app.hong.com.contactsapp.Main.MEMNAME;
+import static app.hong.com.contactsapp.Main.MEMPASS;
+import static app.hong.com.contactsapp.Main.MEMPHONE;
+import static app.hong.com.contactsapp.Main.MEMPHOTO;
+import static app.hong.com.contactsapp.Main.MEMSEQ;
 import static app.hong.com.contactsapp.Main.MEMTAB;
-
 public class MemberList extends AppCompatActivity {
 
     @Override
@@ -22,21 +38,58 @@ public class MemberList extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.member_list);
         Context context = MemberList.this;
-
-        findViewById(R.id.check).setOnClickListener(
-                (View v)->{
-                    GetList getList = new GetList(context);
-                    ArrayList<?> list = new Main.ListService(){
-                        @Override
-                        public ArrayList<?> perform() {
-                            return getList.execute();
-                        }
-                    }.perform();
-                    Toast.makeText(context,String.valueOf(list.size()),Toast.LENGTH_LONG).show();
+        ItemList query = new ItemList(context);
+        ItemDelete delete = new ItemDelete(context);
+        ListView memberList = findViewById(R.id.list_memberList);
+        memberList.setAdapter(new MemberAdapter(context,(ArrayList<Main.Member>) new Main.ListService(){
+            @Override
+            public List<?> perform() {
+                return query.execute();
+            }
+        }.perform()
+        ));
+        memberList.setOnItemClickListener(
+                (AdapterView<?> p, View v, int i, long l)->{
+                    Intent intent = new Intent(context,MemberDetail.class);
+                    Main.Member m = (Main.Member) memberList.getItemAtPosition(i);
+                    intent.putExtra("seq",m.seq+"");
+                    startActivity(intent);
                 }
         );
+        memberList.setOnItemLongClickListener(
+
+                (AdapterView<?> p, View v, int i, long l)->{
+                    Main.Member m= (Main.Member)memberList.getItemAtPosition(i);
+                    new AlertDialog.Builder(context)
+                            .setTitle("DELETE").setMessage("정말로 삭제 할까요?").setPositiveButton(
+                            android.R.string.yes,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                    Toast.makeText(context,"삭제 실행",Toast.LENGTH_LONG).show();
+                                    new Main.StatusService() {
+                                        @Override
+                                        public void perform() {
+                                            delete.seq=m.seq;
+                                            delete.execute();
+                                            startActivity(new Intent(context,MemberList.class));
+                                        }
+                                    };
 
 
+                                }
+                            }
+                    ).setNegativeButton(android.R.string.no,
+                            new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Toast.makeText(context,"삭제 취소",Toast.LENGTH_LONG).show();
+                        }
+                    }).show();
+                    return true;
+                }
+        );
 
     }
     private class ListQuery extends Main.QueryFactory{
@@ -51,29 +104,117 @@ public class MemberList extends AppCompatActivity {
             return helper.getReadableDatabase();
         }
     }
-    private class GetList extends ListQuery{
-        ArrayList<Main.Member> list = new ArrayList<>();
-        Main.Member member = null;
-        public GetList(Context context) {
+    private class ItemList extends ListQuery {
+        public ItemList(Context context) {
             super(context);
         }
-        public ArrayList<Main.Member> execute(){
-            Cursor cursor = super.getDatabase().rawQuery(
-                    String.format("SELECT * FROM %s",MEMTAB),null);
-            if(cursor!=null){
-                while(cursor.moveToNext()){
+
+        public ArrayList<Main.Member> execute() {
+            ArrayList<Main.Member> list = new ArrayList<>();
+            Main.Member member = null;
+            Cursor cursor = this.getDatabase().rawQuery(
+                    String.format("SELECT * FROM %s", MEMTAB), null);
+            if (cursor != null) {
+                while (cursor.moveToNext()) {
                     member = new Main.Member();
-                    member.name=cursor.getString(1);
-                    member.pass=cursor.getString(2);
-                    member.email=cursor.getString(3);
-                    member.phone=cursor.getString(4);
-                    member.addr=cursor.getString(5);
-                    member.photo=cursor.getString(6);
+                    member.seq = cursor.getInt(cursor.getColumnIndex(MEMSEQ));
+                    member.name = cursor.getString(cursor.getColumnIndex(MEMNAME));
+                    member.pass = cursor.getString(cursor.getColumnIndex(MEMPASS));
+                    member.email = cursor.getString(cursor.getColumnIndex(MEMEMAIL));
+                    member.phone = cursor.getString(cursor.getColumnIndex(MEMPHONE));
+                    member.addr = cursor.getString(cursor.getColumnIndex(MEMADDR));
+                    member.photo = cursor.getString(cursor.getColumnIndex(MEMPHOTO));
                     list.add(member);
                 }
+                Log.d("등록 회원 확인", "" + list.size());
+            } else {
+                Log.d("등록된 회원이", "없습니다.");
+
             }
             return list;
         }
+    }
+    private class MemberAdapter extends BaseAdapter {
+        ArrayList<Main.Member> list;
+        LayoutInflater inflater;
+
+        public MemberAdapter(Context _this,ArrayList<Main.Member> list) {
+            this.list = list;
+            this.inflater = LayoutInflater.from(_this);
+        }
+        private int[] photos= {
+                R.drawable.profile_0,
+                R.drawable.profile_1,
+                R.drawable.profile_2,
+                R.drawable.profile_3,
+                R.drawable.profile_4,
+
+        };
+        @Override
+        public int getCount() {
+            return list.size();
+        }
+
+        @Override
+        public Object getItem(int i) {
+            return list.get(i);
+        }
+
+        @Override
+        public long getItemId(int i) {
+            return i;
+        }
+        @Override
+        public View getView(int i, View v, ViewGroup g) {
+            ViewHolder holder;
+            if(v==null){
+                v=inflater.inflate(R.layout.member_item,null);
+                holder = new ViewHolder();
+                holder.profile = v.findViewById(R.id.profile);
+                holder.name=v.findViewById(R.id.item_name);
+                holder.phone=v.findViewById(R.id.item_phone);
+                v.setTag(holder);
+
+            }else{
+                holder =(ViewHolder) v.getTag();
+            }
+            holder.profile.setImageResource(photos[i]);
+            holder.name.setText(list.get(i).name);
+            holder.phone.setText(list.get(i).phone);
+            return v;
+        }
+    }
+    static class ViewHolder{
+        ImageView profile;
+        TextView name,phone;
 
     }
+    private class DeleteQuery extends Main.QueryFactory{
+        SQLiteOpenHelper helper;
+
+        public DeleteQuery(Context context) {
+            super(context);
+            helper = new Main.SQLiteHelper(context);
+        }
+        @Override
+        public SQLiteDatabase getDatabase() {
+            return helper.getWritableDatabase();
+        }
+    }
+    private class ItemDelete extends DeleteQuery{
+        int seq;
+        public ItemDelete(Context context) {
+            super(context);
+        }
+        public void execute(){
+            getDatabase().execSQL(
+                    String.format(
+                            " DELETE FROM MEMBER " +
+                                    " WHERE SEQ LIKE '%s'",seq));
+        }
+    }
+
+
+
 }
+
