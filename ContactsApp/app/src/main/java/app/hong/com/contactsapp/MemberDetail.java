@@ -10,6 +10,10 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import app.hong.com.contactsapp.util.PhoneUtil;
+
 import static app.hong.com.contactsapp.Main.*;
 
 
@@ -51,9 +55,19 @@ public class MemberDetail extends AppCompatActivity {
         addr.setText(mem.addr);
 
         findViewById(R.id.callBtn).setOnClickListener(
-                (View v)->{ });
+                (View v)->{
+                    PhoneUtil util = new PhoneUtil(context,this);
+                    util.setPhoneNum(phone.getText().toString());
+                    util.call();
+                });
         findViewById(R.id.dialBtn).setOnClickListener(
-                (View v)->{ });
+                (View v)->{
+                    PhoneUtil util = new PhoneUtil(context,this);
+                    Toast.makeText(context,"전화번호 : "+phone.getText().toString(),Toast.LENGTH_LONG).show();
+                    util.setPhoneNum(phone.getText().toString());
+                    util.dial();
+                });
+
         findViewById(R.id.smsBtn).setOnClickListener(
                 (View v)->{ });
         findViewById(R.id.emailBtn).setOnClickListener(

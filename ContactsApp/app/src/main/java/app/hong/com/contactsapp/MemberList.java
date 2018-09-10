@@ -19,18 +19,10 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import java.util.ArrayList;
 import java.util.List;
+import static app.hong.com.contactsapp.Main.*;
 
-import static app.hong.com.contactsapp.Main.MEMADDR;
-import static app.hong.com.contactsapp.Main.MEMEMAIL;
-import static app.hong.com.contactsapp.Main.MEMNAME;
-import static app.hong.com.contactsapp.Main.MEMPASS;
-import static app.hong.com.contactsapp.Main.MEMPHONE;
-import static app.hong.com.contactsapp.Main.MEMPHOTO;
-import static app.hong.com.contactsapp.Main.MEMSEQ;
-import static app.hong.com.contactsapp.Main.MEMTAB;
 public class MemberList extends AppCompatActivity {
 
     @Override
@@ -57,7 +49,6 @@ public class MemberList extends AppCompatActivity {
                 }
         );
         memberList.setOnItemLongClickListener(
-
                 (AdapterView<?> p, View v, int i, long l)->{
                     Main.Member m= (Main.Member)memberList.getItemAtPosition(i);
                     new AlertDialog.Builder(context)
@@ -67,17 +58,16 @@ public class MemberList extends AppCompatActivity {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
 
-                                    Toast.makeText(context,"삭제 실행",Toast.LENGTH_LONG).show();
                                     new Main.StatusService() {
                                         @Override
                                         public void perform() {
-                                            delete.seq=m.seq;
+                                            Log.d("들어옴, 삭제할 seq : ",m.seq+"");
+                                            delete.seq=m.seq+"";
                                             delete.execute();
                                             startActivity(new Intent(context,MemberList.class));
                                         }
-                                    };
-
-
+                                    }.perform();
+                                    Toast.makeText(context,"삭제 실행",Toast.LENGTH_LONG).show();
                                 }
                             }
                     ).setNegativeButton(android.R.string.no,
@@ -90,7 +80,12 @@ public class MemberList extends AppCompatActivity {
                     return true;
                 }
         );
+        findViewById(R.id.list_goAdd).setOnClickListener(
+                (View v)->{
+                    startActivity(new Intent(context, MemberAdd.class));
+                }
 
+        );
     }
     private class ListQuery extends Main.QueryFactory{
         SQLiteOpenHelper helper;
@@ -137,19 +132,13 @@ public class MemberList extends AppCompatActivity {
     private class MemberAdapter extends BaseAdapter {
         ArrayList<Main.Member> list;
         LayoutInflater inflater;
+        Context context;
 
-        public MemberAdapter(Context _this,ArrayList<Main.Member> list) {
+        public MemberAdapter(Context context,ArrayList<Main.Member> list) {
             this.list = list;
-            this.inflater = LayoutInflater.from(_this);
+            this.inflater = LayoutInflater.from(context);
+            this.context = context;
         }
-        private int[] photos= {
-                R.drawable.profile_0,
-                R.drawable.profile_1,
-                R.drawable.profile_2,
-                R.drawable.profile_3,
-                R.drawable.profile_4,
-
-        };
         @Override
         public int getCount() {
             return list.size();
@@ -178,7 +167,22 @@ public class MemberList extends AppCompatActivity {
             }else{
                 holder =(ViewHolder) v.getTag();
             }
-            holder.profile.setImageResource(photos[i]);
+            ItemProfile query = new ItemProfile(context);
+            query.seq = list.get(i).seq+"";
+            holder.profile.setImageDrawable(
+                    getResources().getDrawable(
+                            getResources().getIdentifier(
+                                    context.getPackageName()+":drawable/"
+                                            + (new DetailService() {
+                                        @Override
+                                        public Object perform() {
+                                            return query.execute();
+                                        }
+                                    }.perform())
+                                    , null, null
+                            ), context.getTheme()
+                    )
+            );
             holder.name.setText(list.get(i).name);
             holder.phone.setText(list.get(i).phone);
             return v;
@@ -202,7 +206,7 @@ public class MemberList extends AppCompatActivity {
         }
     }
     private class ItemDelete extends DeleteQuery{
-        int seq;
+        String seq;
         public ItemDelete(Context context) {
             super(context);
         }
@@ -214,7 +218,36 @@ public class MemberList extends AppCompatActivity {
         }
     }
 
+    private class MemberProfileQuery extends QueryFactory{
+        SQLiteOpenHelper helper;
+        public MemberProfileQuery(Context context) {
+            super(context);
+            helper = new SQLiteHelper(context);
+        }
 
-
+        @Override
+        public SQLiteDatabase getDatabase() {
+            return helper.getReadableDatabase();
+        }
+    }
+    private class ItemProfile extends MemberProfileQuery{
+        String seq;
+        public ItemProfile(Context _this) {
+            super(_this);
+        }
+        public String execute(){
+            Cursor c = getDatabase()
+                    .rawQuery(String.format(
+                            " SELECT %s FROM %s WHERE %s LIKE '%s' "
+                            , MEMPHOTO, MEMTAB, MEMSEQ, seq),null);
+            String result = "";
+            if(c != null){
+                if(c.moveToNext()){
+                    result = c.getString(c.getColumnIndex(MEMPHOTO));
+                }
+            }
+            return result;
+        }
+    }
 }
 
